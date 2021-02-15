@@ -1,0 +1,14 @@
+---
+title: "Final Analysis"
+author: "Team 3"
+date: "2/15/2021"
+output: html_document
+---
+
+```{r setup}
+choco <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/master/hwlabs/data/choco.csv") 
+```
+
+```{r}
+str(choco)
+```
