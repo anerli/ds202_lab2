@@ -9,6 +9,47 @@ output: html_document
 choco <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/master/hwlabs/data/choco.csv") 
 ```
 
+# Bean Origin vs Rating
+To get a general overview of what locations produce the cacao beans which taste
+the best on average, we can box plot the rating property, categorizing by
+bean origin:
 ```{r}
-str(choco)
+types <- reorder(choco$Bean_Origin, choco$Rating, FUN=mean)
+boxplot(choco$Rating ~ types, las=2, ylab='Average Rating', xlab='')
+mtext('Cacao Bean Origin', side=3, line=1)
 ```
+
+However, if we want to know just where the best beans come from (i.e., beans
+that produce chocolates which having a rating of 4.0), we can filter down
+the dataset to only chocolates with the highest rating and show them in a table
+or barplot:
+```{r}
+# Want bar chart of all 4.0 ratings by location
+best <- choco[choco$Rating == 4.0,]
+best_grouped <- sort(table(best$Bean_Origin))
+best_grouped
+barplot(best_grouped, las=2, ylab='Number of 4.0 Ratings', ylim=c(0,20))
+mtext('Cacao Bean Origin', side=3, line=1)
+```
+
+So although Tobago produced on average the highest rated chocolates, we could guess
+that this is because there are few data points i.e. chocolates tested from Tobago.
+
+We can confirm this by showing how many chocolates were tested whose beans
+originated from Tobago:
+```{r}
+table(choco$Bean_Origin)['Tobago']
+```
+Only 2 chocolates from Tobago were tested, which explains the extremely high average.
+
+Venezuela on the other hand, as can be seen in the bar chart, produced beans
+for 18 chocolates which were rated 4.0. We can see where Venezuela lies on average
+
+```{r}
+types <- reorder(choco$Bean_Origin, choco$Rating, FUN=function(x) -mean(x))
+mean_ratings <- aggregate(choco$Rating ~ types, FUN=mean)
+mean_ratings
+```
+
+We can see that Venezuela is rated 21st on average even though it has the most
+4.0 ratings.

@@ -30,3 +30,22 @@ barplot(table(choco$Location))
 barplot(sort(table(choco$Location)))
 # Top 5
 head(sort(table(choco$Location), decreasing=TRUE))
+
+
+# 4. Flavor by bean origin
+# TODO: Clean up
+types <- reorder(choco$Bean_Origin, choco$Rating, FUN=mean)
+boxplot(choco$Rating ~ types, las=2, ylab='Average Rating', xlab='Cacao Bean Origin')
+
+
+# Cocoa percent vs rating
+plot(choco$Cocoa_Percent, choco$Rating)
+
+# Date vs rating
+plot(choco$Date, choco$Rating)
+table(choco$Date)
+# For some reason reviews they did earlier had worse taste, or maybe
+# they just got more lenient with their ratings over time
+
+
+
