@@ -1,6 +1,6 @@
 ---
 title: "Final Analysis"
-author: "Team 3"
+author: "Team 3 - Ryan and Anders"
 date: "2/15/2021"
 output: html_document
 ---
@@ -11,4 +11,66 @@ choco <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/mast
 
 ```{r}
 str(choco)
+
+
+# 1. Rating distribution
+hist(choco$Rating)
+boxplot(choco$Rating)
+summary(choco$Rating)
+
+# There are a few outliers at the 1.0 end of the spectrum
+
+# 2. Ratings regarding company
+types <- factor(choco$Company)
+types <- reorder(types, choco$Rating, FUN=mean, na.rm=TRUE)
+str(types)
+str(choco$Rating)
+str(choco$Rating ~ types)
+# Can't hist a formula but can boxplot a formula
+# By company
+boxplot(choco$Rating ~ types)
+table(types)
+
+# By location, much more readable since less locations than companies
+types <- reorder(choco$Location, choco$Rating, FUN=mean)
+boxplot(choco$Rating ~ types)
+
+# Okay now the question that was asked, num ratings by location of company
+# We can just do this since there is one row per rating
+barplot(table(choco$Location))
+barplot(sort(table(choco$Location)))
+# Top 5
+head(sort(table(choco$Location), decreasing=TRUE))
+
+
+#3
+#The highest ratings come from cocoa percents in the range of 65-79%
+boxplot(choco$Rating ~ choco$Cocoa_Percent)
+
+#Takes avg of each rating and shows in table. 
+#Doesn't matter how high the cocoa percentage is, because you see some of the highest percentages with the lowest ratings
+tb1 <- matrix(c(choco$Cocoa_Percent, choco$Rating), ncol=2)
+aggregate(choco$Cocoa_Percent ~ choco$Rating, tb1, mean)
+
+
+#4
+x <- reorder(choco$Bean_Origin, choco$Rating, FUN=mean)
+boxplot(choco$Rating ~ x)
+
+
+#5 
+#One analysis to perform could be if the date/year has an influence on rating. 
+boxplot(choco$Rating ~ choco$Date)
+#As you can see from the box plot, they haven't really improved the quality of chocolate as the years
+# have gone on. 
+tb1 <- matrix(c(choco$Date, choco$Rating), ncol=2)
+aggregate(choco$Rating ~ choco$Date , tb1, mean)
+#As the years have gone on, they have gotten very consistent with the quality of chocolate, with a peak 
+# around 2017. 
+
+
+#A seond analysis to perform would be how rating and Characteristic1 are related:
+x <- reorder(choco$Characteristics1, choco$Rating, FUN=mean)
+boxplot(choco$Rating ~ x)
+#This shows that chocolates with the characteristics "tart" and "hay" have the highest  rating
 ```
