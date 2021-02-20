@@ -1,6 +1,6 @@
 ---
 title: "Final Analysis"
-author: "Team 3"
+author: "Team 3 - Ryan and Anders"
 date: "2/15/2021"
 output: html_document
 ---
@@ -9,11 +9,51 @@ output: html_document
 choco <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/master/hwlabs/data/choco.csv") 
 ```
 
-# Bean Origin vs Rating
+# 1. Rating Distribution
+```{r}
+hist(choco$Rating)
+boxplot(choco$Rating)
+summary(choco$Rating)
+```
+There are a few outliers at the 1.0 end of the spectrum.
+
+# 2. Number of Ratings by Company
+Since each row in the dataset represents one rating, we can just count the number
+of rows for each company to get the number of ratings
+```{r}
+count_by_company <- sort(table(choco$Location), decreasing=TRUE)
+barplot(count_by_company, ylab='Number of Ratings', las=2, ylim=c(0,1000))
+mtext('Company Location', side=3, line=1)
+```
+
+We can see here just the 5 companies which have the most ratings:
+```{r}
+# Top 5
+head(count_by_company)
+```
+
+# 3. Ratings by Cocoa Percent
+We can visualize the mean ratings by cocoa percent with a box plot:
+```{r}
+boxplot(choco$Rating ~ choco$Cocoa_Percent, xlab='Cocoa Percent', ylab='Rating')
+```
+
+As seen above, the highest ratings generally come from cocoa percents in the range of 65-79%.
+
+We can also show in a table the average cocoa percent for each rating interval:
+```{r}
+tb1 <- matrix(c(choco$Cocoa_Percent, choco$Rating), ncol=2)
+aggregate(choco$Cocoa_Percent ~ choco$Rating, tb1, mean)
+```
+
+General as the rating increases, the average cocoa percent is close to 70%.
+
+# 4. Bean Origin vs Rating
 To get a general overview of what locations produce the cacao beans which taste
 the best on average, we can box plot the rating property, categorizing by
 bean origin:
 ```{r}
+
 types <- reorder(choco$Bean_Origin, choco$Rating, FUN=mean)
 boxplot(choco$Rating ~ types, las=2, ylab='Average Rating', xlab='')
 mtext('Cacao Bean Origin', side=3, line=1)
@@ -53,3 +93,43 @@ mean_ratings
 
 We can see that Venezuela is rated 21st on average even though it has the most
 4.0 ratings.
+
+# 5. i. Influence of Rating Date on Rating
+One analysis to perform could be if the date/year has an influence on rating. 
+```{r}
+boxplot(choco$Rating ~ choco$Date)
+```
+
+As you can see from the box plot, they haven't really improved the quality of chocolate as the years
+have gone on. 
+
+```{r}
+tb1 <- matrix(c(choco$Date, choco$Rating), ncol=2)
+aggregate(choco$Rating ~ choco$Date , tb1, mean)
+```
+
+As the years have gone on, they have gotten very consistent with the quality of chocolate, with a peak 
+around 2017. 
+
+
+# 5. ii. Influence of Taste Characteristics on Rating
+
+First we can show some of the unique characteristics from ratings in the dataset:
+
+```{r}
+all_characteristics <- unique(c(choco$Characteristics1, choco$Characteristics2, 
+                         choco$Characteristics3, choco$Characteristics4))
+all_characteristics <- all_characteristics[!is.na(all_characteristics)]
+str(all_characteristics)
+```
+
+
+A second analysis to perform would be how rating and Characteristic1 are related:
+```{r}
+x <- reorder(choco$Characteristics1, choco$Rating, FUN=mean)
+boxplot(choco$Rating ~ x, las=2, xlab="")
+```
+
+This shows that chocolates with characteristics like "Tropical fruit" and "Sweet spice"
+have the highest rating.
+

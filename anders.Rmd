@@ -5,26 +5,159 @@ date: "2/15/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup}
+choco <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/master/hwlabs/data/choco.csv") 
 ```
 
-## R Markdown
+# 1. Rating Distribution
+```{r}
+hist(choco$Rating)
+boxplot(choco$Rating)
+summary(choco$Rating)
+```
+There are a few outliers at the 1.0 end of the spectrum.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+# 2. Number of Ratings by Company
+Since each row in the dataset represents one rating, we can just count the number
+of rows for each company to get the number of ratings
+```{r}
+count_by_company <- sort(table(choco$Location), decreasing=TRUE)
+barplot(count_by_company, ylab='Number of Ratings', las=2, ylim=c(0,1000))
+mtext('Company Location', side=3, line=1)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+We can see here just the 5 companies which have the most ratings:
+```{r}
+# Top 5
+head(count_by_company)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+# 3. Ratings by Cocoa Percent
+We can visualize the mean ratings by cocoa percent with a box plot:
+```{r}
+boxplot(choco$Rating ~ choco$Cocoa_Percent, xlab='Cocoa Percent', ylab='Rating')
+```
+
+As seen above, the highest ratings generally come from cocoa percents in the range of 65-79%.
+
+We can also show in a table the average cocoa percent for each rating interval:
+```{r}
+tb1 <- matrix(c(choco$Cocoa_Percent, choco$Rating), ncol=2)
+aggregate(choco$Cocoa_Percent ~ choco$Rating, tb1, mean)
+```
+
+General as the rating increases, the average cocoa percent is close to 70%.
+
+# 4. Bean Origin vs Rating
+To get a general overview of what locations produce the cacao beans which taste
+the best on average, we can box plot the rating property, categorizing by
+bean origin:
+```{r}
+
+types <- reorder(choco$Bean_Origin, choco$Rating, FUN=mean)
+boxplot(choco$Rating ~ types, las=2, ylab='Average Rating', xlab='')
+mtext('Cacao Bean Origin', side=3, line=1)
+```
+
+However, if we want to know just where the best beans come from (i.e., beans
+that produce chocolates which having a rating of 4.0), we can filter down
+the dataset to only chocolates with the highest rating and show them in a table
+or barplot:
+```{r}
+# Want bar chart of all 4.0 ratings by location
+best <- choco[choco$Rating == 4.0,]
+best_grouped <- sort(table(best$Bean_Origin))
+best_grouped
+barplot(best_grouped, las=2, ylab='Number of 4.0 Ratings', ylim=c(0,20))
+mtext('Cacao Bean Origin', side=3, line=1)
+```
+
+So although Tobago produced on average the highest rated chocolates, we could guess
+that this is because there are few data points i.e. chocolates tested from Tobago.
+
+We can confirm this by showing how many chocolates were tested whose beans
+originated from Tobago:
+```{r}
+table(choco$Bean_Origin)['Tobago']
+```
+Only 2 chocolates from Tobago were tested, which explains the extremely high average.
+
+Venezuela on the other hand, as can be seen in the bar chart, produced beans
+for 18 chocolates which were rated 4.0. We can see where Venezuela lies on average
+
+```{r}
+types <- reorder(choco$Bean_Origin, choco$Rating, FUN=function(x) -mean(x))
+mean_ratings <- aggregate(choco$Rating ~ types, FUN=mean)
+mean_ratings
+```
+
+We can see that Venezuela is rated 21st on average even though it has the most
+4.0 ratings.
+
+# 5. i. Influence of Rating Date on Rating
+One analysis to perform could be if the date/year has an influence on rating. 
+```{r}
+boxplot(choco$Rating ~ choco$Date)
+```
+
+As you can see from the box plot, they haven't really improved the quality of chocolate as the years
+have gone on. 
+
+```{r}
+tb1 <- matrix(c(choco$Date, choco$Rating), ncol=2)
+aggregate(choco$Rating ~ choco$Date , tb1, mean)
+```
+
+As the years have gone on, they have gotten very consistent with the quality of chocolate, with a peak 
+around 2017. 
+
+
+# 5. ii. Influence of Taste Characteristics on Rating
+
+To determine how taste characteristics affect rating, we collect the average ratings
+by characteristic.
+
+First we collect all unique characteristics from ratings in the dataset:
+
+```{r}
+all_characteristics <- unique(c(choco$Characteristics1, choco$Characteristics2, 
+                         choco$Characteristics3, choco$Characteristics4))
+all_characteristics <- all_characteristics[!is.na(all_characteristics)]
+str(all_characteristics)
+```
+
+Now for each characteristic we can check through all the rows and 
+
+```{r}
+#avg_ratings_by_characteristic <- data.frame('characteristic'=all_characteristics)
+avg_ratings_by_characteristic <- data.frame('characteristic'=all_characteristics)
+row.names(avg_ratings_by_characteristic) <- all_characteristics
+avg_ratings_by_characteristic[,'count'] <- 0
+avg_ratings_by_characteristic[,'avg_rating'] <- -1
+
+avg_ratings_by_characteristic['fruity',]
+
+head(avg_ratings_by_characteristic)
+str(avg_ratings_by_characteristic)
+
+for (characteristic in all_characteristics) {
+  for (i in 1:nrow(choco)){
+    if (characteristic == choco$Characteristics1[i] || characteristic == choco$Characteristics2[i] || characteristic == choco$Characteristics3[i]|| characteristic == choco$Characteristics4[i]){
+      if (avg_ratings_by_characteristic[characteristic,] == -1){
+        avg_ratings_by_characteristic[characteristic,] <- choco$Rating[i]
+      }
+    }
+  }
+}
+```
+
+
+A second analysis to perform would be how rating and Characteristic1 are related:
+```{r}
+x <- reorder(choco$Characteristics1, choco$Rating, FUN=mean)
+boxplot(choco$Rating ~ x)
+```
+
+This shows that chocolates with the characteristics "tart" and "hay" have the highest  rating.
+
+

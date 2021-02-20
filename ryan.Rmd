@@ -1,1 +1,22 @@
+---
+title: "Individual Analysis"
+author: "Ryan Scehovic"
+date: "2/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+choco <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/master/hwlabs/data/choco.csv") 
+str(choco)
+
+#3
+#
+ch = choco$Cocoa_Percent
+rt = choco$Rating
+
+plot(ch, rt, main="Scatterplot",
+     xlab="Cocoa Percentage", ylab="Rating", pch = 20)
+
+```
 
